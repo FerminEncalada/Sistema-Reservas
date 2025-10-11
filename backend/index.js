@@ -1,4 +1,6 @@
 import app from './app.js';
+import { connectDB } from './db.js';
 
-app.listen(3000)
-console.log('Servidor corriendo en puerto', 3000);
+connectDB();
+app.listen(3000);
+console.log("Servidor corriendo en puerto", 3000);
