@@ -6,11 +6,6 @@ const router = Router();
 router.post("/register", register);
 
 router.post("/login", login);
-<<<<<<< Updated upstream
-=======
-
-router.post("/logout", logout);
->>>>>>> Stashed changes
 
 router.post("/logout", logout);
 
