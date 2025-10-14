@@ -1,11 +1,15 @@
 import User from '../models/user.model.js';
+<<<<<<< HEAD
 import bcrypt from 'bcryptjs';
 import { createAccessToken } from '../libs/jwt.js';
+=======
+>>>>>>> origin/develop
 
 export const register = async (req, res) => {
     const { email, username, password } = req.body;
 
     try {
+<<<<<<< HEAD
         
     const passwordHash = await bcrypt.hash(password, 10)
 
@@ -63,3 +67,20 @@ export const logout = (req, res) => {
     });
     return res.sendStatus(200);
 }
+=======
+    const newUser = new User({ 
+        username, 
+        email, 
+        password, 
+    })
+
+    const userSaved = await newUser.save();
+    res.json(userSaved)
+
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const login = (req, res) => res.send('login');
+>>>>>>> origin/develop
