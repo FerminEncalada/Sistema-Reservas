@@ -3,6 +3,6 @@ import { authRequired } from "../middlewares/validateToken.js";
 
 const router = Router()
 
-router.get("/tasks", authRequired, (req, res) => res.send("Tasks"))
+router.get("/Tasks", authRequired, (req, res) => res.send("Tasks"))
 
 export default router;
