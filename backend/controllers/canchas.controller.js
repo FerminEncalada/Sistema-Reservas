@@ -5,6 +5,12 @@ export const getCanchas = async (req, res) => {
     res.json(canchas);
 };
 
+export const getCancha = async (req, res) => {
+    const Cancha = await Cancha.findById(req.params.id)
+    if (!Cancha) return res.status(404).json({ message: "Cancha no encontrada" });
+    res.json(Cancha);
+};
+
 export const createCancha = async (req, res) => {
     const { nombre, tipo, precioHora, estado } = req.body;
     const nuevaCancha = new Cancha ({
@@ -16,13 +22,6 @@ export const createCancha = async (req, res) => {
     const savedCancha = await nuevaCancha.save();
     res.json(savedCancha);
 };
-
-export const getCancha = async (req, res) => {
-    const Cancha = await Cancha.findById(req.params.id)
-    if (!Cancha) return res.status(404).json({ message: "Cancha no encontrada" });
-    res.json(Cancha);
-};
-
 
 export const deleteCancha = async (req, res) => {
     const Cancha = await Cancha.findByIdAndDelete(req.params.id)
