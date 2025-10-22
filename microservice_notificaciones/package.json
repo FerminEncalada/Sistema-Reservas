@@ -1,0 +1,23 @@
+{
+  "name": "microservice_notificaciones",
+  "version": "1.0.0",
+  "description": "Microservicio para enviar notificaciones por correo electrónico al realizar una reserva",
+  "main": "src/app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "keywords": [],
+  "author": "Boris Rengel",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "nodemailer": "^7.0.9"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
