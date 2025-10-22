@@ -22,6 +22,11 @@ const reservaSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
+    cancha: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Cancha',
+        required: true
+    }
 },
 {
     timestamps: true

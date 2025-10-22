@@ -1,9 +1,13 @@
 import Reserva from '../models/reserva.model.js';
+import axios from 'axios';
+import User from '../models/user.model.js';
+import Cancha from "../models/cancha.model.js";
 
 export const getReservas = async (req, res) => {
     const reservas = await Reserva.find({
         user: req.user.id
     }).populate('user');
+    
     res.json(reservas)
 };
 
@@ -14,16 +18,47 @@ export const getReserva = async (req, res) => {
 };
 
 export const createReserva = async (req, res) => {
-    const { fecha, horaInicio, horaFin, total } = req.body
-    const newReserva = new Reserva ({
-        fecha,
-        horaInicio,
-        horaFin,
-        total,
-        user: req.user.id,
-    });
-    const savedReserva = await newReserva.save();
-    res.status(201).json(savedReserva);
+    try {
+        const { fecha, horaInicio, horaFin, total, canchaId } = req.body;
+const cancha = await Cancha.findById(canchaId);
+
+        const usuario = await User.findById(req.user.id); 
+
+        if (!usuario) return res.status(404).json({ message: "Usuario no encontrado" });
+        if (!cancha) return res.status(404).json({ message: "Cancha no encontrada" });
+
+        // Crear la reserva asociada al usuario
+        const newReserva = new Reserva({
+            fecha,
+            horaInicio,
+            horaFin,
+            total,
+            user: usuario._id, // Guardamos solo el ObjectId
+            cancha: cancha._id
+        });
+
+        const savedReserva = await newReserva.save();
+
+        // "Populate" para enviar la reserva con todos los datos del usuario
+        const reservaConUsuario = await Reserva.findById(savedReserva._id).populate('user');
+
+        console.log('Usuario de la reserva:', usuario);
+        
+
+        await axios.post('http://localhost:5001/api/notificaciones/send', {
+  email: usuario.email,
+  nombre: usuario.username,
+  cancha: cancha.nombre,
+  fecha: reservaConUsuario.fecha,
+  hora: reservaConUsuario.horaInicio
+});
+
+        res.status(201).json(reservaConUsuario);
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error.message });
+    }
 };
 
 export const deleteReserva = async (req, res) => {
