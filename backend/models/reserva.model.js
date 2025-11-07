@@ -17,6 +17,11 @@ const reservaSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    estado: {
+        type: String,
+        enum: ['pendiente', 'confirmada', 'cancelada'],
+        default: 'confirmada'
+    },
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

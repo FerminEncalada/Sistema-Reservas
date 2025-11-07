@@ -4,7 +4,8 @@ import { getReservas,
     getReserva, 
     createReserva, 
     updateReserva, 
-    deleteReserva 
+    deleteReserva,
+    getDisponibilidadCancha
 } from "../controllers/reservas.controller.js";
 
 const router = Router()
@@ -17,6 +18,11 @@ router.post("/reservas", authRequired, createReserva);
 
 router.delete("/reservas/:id", authRequired, deleteReserva);
 
+router.get("/disponibilidad", authRequired, getReserva);
+
 router.put("/reservas/:id", authRequired, updateReserva);
+
+router.get("/:id/disponibilidad", getDisponibilidadCancha);
+
 
 export default router;
