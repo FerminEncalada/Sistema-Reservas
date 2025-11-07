@@ -44,16 +44,9 @@ Crear rama feature para iniciar cada tarea.
 Realizar commits frecuentes y claros.
 Fusionar feature → develop al finalizar cada funcionalidad.
 Fusionar develop → main cuando haya una versión estable.
-Instrucciones de Ejecución
-
-Clonar el repositorio: git clone https://github.com/FerminEncalada/Sistema-de-Reservas.git
-
-Abrir un terminal en la carpeta sistema-reservas-backend
-
-Ejecutar el comando
 
 👥 Equipo de Trabajo
 
-Boris Rengel: Responsable de Backend y Configuración.
+Boris Rengel: Responsable del microservicio y configuraciones.
 
 José Encalada: Responsable Backend y Documentación del proyecto.
