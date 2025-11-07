@@ -1,22 +1,30 @@
 import { Router } from "express";
-import { authRequired } from "../middlewares/validateToken.js";
-import { getCanchas, 
-    getCancha, 
-    createCancha, 
-    updateCancha, 
-    deleteCancha 
+import {
+  getCanchas,
+  getCancha,
+  createCancha,
+  updateCancha,
+  deleteCancha
 } from "../controllers/canchas.controller.js";
 
-const router = Router()
+import { authRequired } from "../middlewares/validateToken.js";
+import isAdmin from "../middlewares/isAdmin.js";
 
+const router = Router();
+
+// listar canchas → cualquier usuario autenticado
 router.get("/canchas", authRequired, getCanchas);
 
+// ver una cancha → cualquier usuario autenticado
 router.get("/canchas/:id", authRequired, getCancha);
 
-router.post("/canchas", authRequired, createCancha);
+// crear cancha → solo admin
+router.post("/canchas", authRequired, isAdmin, createCancha);
 
-router.delete("/canchas/:id", authRequired, deleteCancha);
+// editar cancha → solo admin
+router.put("/canchas/:id", authRequired, isAdmin, updateCancha);
 
-router.put("/canchas/:id", authRequired, updateCancha);
+// eliminar cancha → solo admin
+router.delete("/canchas/:id", authRequired, isAdmin, deleteCancha);
 
 export default router;
