@@ -7,7 +7,7 @@ export const register = async (req, res) => {
 
   try {
     // Validar campos vacíos
-    if (!email || !username || !password || !nombre || !apellido || !cedula || !rol) {
+    if (!email || !username || !password || !nombre || !apellido || !cedula) {
       return res.status(400).json({
         success: false,
         message: "Todos los campos son obligatorios"
@@ -33,13 +33,7 @@ export const register = async (req, res) => {
     }
 
     // Validar contraseña (8 a 20 caracteres, 1 mayúscula, 1 número, 1 símbolo)
-    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/;
-    if (!passwordRegex.test(password)) {
-      return res.status(400).json({
-        success: false,
-        message: "La contraseña debe tener entre 8 y 20 caracteres, incluir una mayúscula, un número y un carácter especial"
-      });
-    }
+    // Validar contraseña removido
 
     // Verificar unicidad: email, username y cedula
     const emailExist = await User.findOne({ email });
@@ -67,9 +61,9 @@ export const register = async (req, res) => {
       nombre,
       apellido,
       cedula,
-      rol
+      rol: rol || 'usuario' // Asignar rol por defecto 'user' si no se proporciona
     });
-
+    
     const userSaved = await newUser.save();
     const token = await createAccessToken({ id: userSaved._id, rol: userSaved.rol });
     res.cookie("token", token);
