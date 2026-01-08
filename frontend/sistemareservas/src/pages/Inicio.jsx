@@ -17,21 +17,24 @@ export default function Inicio() {
         </div>
 
         <nav className="hidden md:flex gap-8">
-          <Link className="text-sm font-medium text-black hover:underline" to="/login">
+          <Link className="text-sm font-medium text-black hover:underline" to="/">
             Inicio
           </Link>
-          <Link className="text-sm font-medium text-black hover:underline" to="/reservas">
-            Mis Reservas
+          <Link className="text-sm font-medium text-black hover:underline" to="/canchas">
+            Canchas Disponibles
           </Link>
-          <Link className="text-sm font-medium text-black hover:underline" to="/perfil">
-            Perfil
+          <Link className="text-sm font-medium text-black hover:underline" to="/registro">
+            Registro
           </Link>
+  
         </nav>
 
         <div className="flex items-center gap-4">
-          <button className="h-10 rounded-lg border border-black px-4 text-sm font-bold text-black hover:bg-gray-100">
+          <Link to="/login" className="text-sm font-medium text-black hover:underline">
+             <button className="h-10 rounded-lg border border-black px-4 text-sm font-bold text-black hover:bg-gray-100">
             Iniciar Sesión
           </button>
+          </Link>
           <FaUserCircle className="hidden sm:block text-3xl text-black" />
         </div>
       </header>
@@ -56,7 +59,7 @@ export default function Inicio() {
             </p>
           </div>
 
-          {/* BUSCADOR */}
+          {/* BUSCADOR 
           <div className="mt-8">
             <label className="flex h-12 w-full items-center rounded-lg border border-black bg-white px-4">
               <FiSearch className="text-lg text-black" />
@@ -66,7 +69,7 @@ export default function Inicio() {
               />
             </label>
           </div>
-
+*/}
           {/* CTA */}
           <div className="mt-10 flex justify-center">
             <button className="h-12 w-full max-w-sm rounded-lg border border-black font-bold text-black hover:bg-gray-100">

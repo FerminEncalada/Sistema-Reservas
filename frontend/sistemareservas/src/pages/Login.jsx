@@ -1,8 +1,24 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { FiMail, FiLock } from "react-icons/fi";
+import { Link,useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react"; // Agregamos el useState
+import { useForm } from "react-hook-form";
+import { useAuth } from "../context/AuthContext";
+import { FiMail, FiLock,FiArrowLeft } from "react-icons/fi";
 
-export default function Login() {
+const Login = () => {
+    const { register, handleSubmit, formState: { errors } } = useForm();
+    const { iniciodesesion, isAuthenticated } = useAuth();
+    const navigate = useNavigate();
+    const [ showPassword, setShowPassword ] = useState(false);
+
+    const onSubmit = handleSubmit((data) => {
+        iniciodesesion(data);
+    });
+
+    useEffect(() => {
+    if (isAuthenticated) navigate("/sala");
+     }, [isAuthenticated]);
+
   return (
     <div className="min-h-screen w-full bg-white text-black font-display font-bold">
 
@@ -11,6 +27,12 @@ export default function Login() {
         {/* ================= FORM ================= */}
         <div className="flex items-center justify-center p-8 lg:p-16">
           <div className="w-full max-w-md">
+
+                       <Link to="/" className="mb-6 inline-flex items-center gap-2 text-black hover:opacity-70">
+              <FiArrowLeft className="text-2xl" />
+              <span className="text-sm font-bold">Volver</span>
+            </Link>
+            
 
             {/* TITULO */}
             <div className="mb-8">
@@ -23,39 +45,44 @@ export default function Login() {
             </div>
 
             {/* FORM */}
-            <form className="flex flex-col gap-6">
+            <form onSubmit={onSubmit} className="flex flex-col gap-6">
 
               {/* EMAIL */}
               <div>
-                <label className="block pb-2 text-base font-bold">
+                <label  htmlFor="email" className="block pb-2 text-base font-bold">
                   Correo electrónico
                 </label>
                 <div className="flex h-14 items-center rounded-lg border border-black bg-white">
                   <input
-                    type="email"
-                    placeholder="tu@correo.com"
+                   type="email"
+                    {...register("email", { required: true })}
                     className="h-full w-full bg-transparent px-4 outline-none placeholder:text-gray-600 font-bold"
                   />
                   <FiMail className="mr-4 text-xl text-black" />
                 </div>
+                {errors.email && (<p className='text-red-900'>Correo electrónico es requerido</p>)}
               </div>
 
               {/* PASSWORD */}
               <div>
-                <label className="block pb-2 text-base font-bold">
+                <label htmlFor="password" className="block pb-2 text-base font-bold">
                   Contraseña
                 </label>
                 <div className="flex h-14 items-center rounded-lg border border-black bg-white">
                   <input
-                    type="password"
-                    placeholder="Introduce tu contraseña"
+                    type={showPassword ? "text" : "password"}
+                    {...register("password", { required: true })}
                     className="h-full w-full bg-transparent px-4 outline-none placeholder:text-gray-600 font-bold"
                   />
-                  <FiLock className="mr-4 text-xl text-black" />
+                  <FiLock 
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="mr-4 text-xl text-black" />
                 </div>
+                {errors.password && (<p className='text-red-900'>La contraseña es requerida</p>)}
               </div>
 
-              {/* OLVIDE PASSWORD */}
+              {/* OLVIDE PASSWORD 
               <div className="flex justify-end">
                 <Link
                   to="#"
@@ -64,7 +91,7 @@ export default function Login() {
                   Olvidé mi contraseña
                 </Link>
               </div>
-
+*/}
               {/* BUTTON */}
               <button
                 type="submit"
@@ -76,7 +103,7 @@ export default function Login() {
               {/* REGISTER */}
               <p className="text-center text-sm font-bold">
                 ¿No tienes una cuenta?{" "}
-                <Link to="#" className="underline font-black">
+                <Link to="/registro" className="underline font-black">
                   Regístrate
                 </Link>
               </p>
@@ -100,3 +127,5 @@ export default function Login() {
     </div>
   );
 }
+
+export default Login;

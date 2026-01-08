@@ -1,5 +1,6 @@
 import { createContext, useState, useContext, useEffect } from "react";
-import { iniciosesion } from "../api/Autenticacion";
+import { iniciosesion,actualizarUsuario,cerrarSesion,eliminarUsuario,obtenerPerfil,obtenerUsuarios,registro
+ } from "../api/Autenticacion";
 import Cookies from "js-cookie";
 
 export const AuthContext = createContext();
@@ -18,6 +19,27 @@ export const AuthProvider = ({ children }) => {
     const [errors, setErrors] = useState([]);
     const [loading, setLoading] = useState(true);
 
+const registroUsuario = async (userData) => {
+  try {
+    const res = await registro(userData);
+
+    setUser(res.data.user); // 👈 clave
+    setIsAuthenticated(true);
+    setErrors([]);
+
+    return res.data;
+
+  } catch (error) {
+    setErrors(
+      error.response?.data?.message
+        ? [error.response.data.message]
+        : ["Error al registrar el usuario"]
+    );
+    throw error;
+  }
+};
+
+
 
 const iniciodesesion = async (user) => {
     try {
@@ -31,10 +53,26 @@ const iniciodesesion = async (user) => {
     }
 };
 
+const cerrarSesionUsuario = async () => {
+    try {
+        await cerrarSesion();
+        Cookies.remove("token");
+        setIsAuthenticated(false);
+        setUser(null);
+    } catch (error) {
+        console.log(error);
+    }
+};
+
     return (
         <AuthContext.Provider
             value={{
-             iniciodesesion
+            iniciodesesion,
+            registroUsuario,
+            cerrarSesionUsuario,
+            user,
+            errors,
+            isAuthenticated
             }}
         >
             {children}
