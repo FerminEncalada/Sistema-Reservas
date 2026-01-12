@@ -1,25 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { FaRegFutbol, FaUserCircle, FaMapMarkerAlt, FaClock, FaSignOutAlt } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import { FaRegFutbol, FaMapMarkerAlt, FaClock,FaUserCircle } from "react-icons/fa";
 import { obtenerCanchas } from "../api/Canchas";
-import { useAuth } from "../context/AuthContext";
 import fotodefecto from "../photo/foto.jpg"
+
+
+
 
 export default function Canchas() {
   const [canchas, setCanchas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState("");
-  const { isAuthenticated, user, cerrarSesionUsuario } = useAuth();
-  const navigate = useNavigate();
 
-  // 🔐 PROTECCIÓN DE RUTA
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
     cargarCanchas();
-  }, [isAuthenticated, navigate]);
+  }, []);
 
   const cargarCanchas = async () => {
     try {
@@ -32,11 +27,6 @@ export default function Canchas() {
     }
   };
 
-  const handleCerrarSesion = async () => {
-    await cerrarSesionUsuario();
-    navigate("/");
-  };
-
   const canchasFiltradas = canchas.filter((cancha) =>
     cancha.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
     cancha.ubicacion?.direccion?.toLowerCase().includes(busqueda.toLowerCase())
@@ -46,58 +36,49 @@ export default function Canchas() {
     <div className="min-h-screen w-full bg-white text-black font-display flex flex-col">
 
       {/* ================= HEADER ================= */}
-      <header className="sticky top-0 z-50 flex items-center justify-between border-b border-gray-300 bg-white px-4 py-3 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3">
-          <FaRegFutbol className="text-2xl text-black" />
-          <h2 className="text-lg font-bold text-black">ReservaCancha</h2>
-        </div>
-
-        <nav className="hidden md:flex gap-8">
-          <Link className="text-sm font-medium text-black underline" to="/canchas">
-            Canchas
-          </Link>
-          <Link className="text-sm font-medium text-black hover:underline" to="/sala">
-            Mis Reservas
-          </Link>
-          {user?.rol === "admin" && (
-            <Link className="text-sm font-medium text-black hover:underline" to="/admin/canchas">
-              Panel Admin
-            </Link>
-          )}
-        </nav>
-
-        <div className="flex items-center gap-3">
-          <span className="hidden sm:block text-sm font-medium">
-            {user?.username}
-          </span>
-          <Link to="/perfil">
-            <FaUserCircle className="text-3xl text-black cursor-pointer hover:opacity-70" />
-          </Link>
-          <button
-            onClick={handleCerrarSesion}
-            className="flex items-center gap-2 text-sm font-bold hover:text-red-600"
-          >
-            <FaSignOutAlt />
-          </button>
-        </div>
-      </header>
+     <header className="sticky top-0 z-50 flex items-center justify-between border-b border-gray-300 bg-white px-4 py-3 sm:px-6 lg:px-8">
+              <Link className="text-sm font-medium hover:underline" to="/">
+             <div className="flex items-center gap-3">
+               <FaRegFutbol className="text-2xl" />
+               <h2 className="text-lg font-bold">ReservaCancha</h2>
+             </div>
+             </Link>
+     
+             <nav className="hidden md:flex gap-8">
+               <Link className="text-sm font-medium hover:underline" to="/">Inicio</Link>
+               <Link className="text-sm font-medium hover:underline" to="/canchasinicio">Canchas</Link>
+               <Link className="text-sm font-medium hover:underline" to="/registro">Registro</Link>
+             </nav>
+     
+             <div className="flex items-center gap-4">
+               <Link to="/login">
+                 <button className="h-10 rounded-lg border border-black px-4 text-sm font-bold hover:bg-gray-100">
+                   Iniciar Sesión
+                 </button>
+               </Link>
+             </div>
+           </header>
+     
 
       {/* ================= MAIN ================= */}
       <main className="flex-1 flex justify-center py-8">
         <div className="w-full max-w-5xl px-4 sm:px-6 lg:px-8">
 
+          {/* TITULO */}
           <div className="mb-8">
-            <h1 className="text-3xl font-black mb-3">
-              Canchas Disponibles
+            <h1 className="text-3xl font-black">
+              Canchas disponibles
             </h1>
           </div>
 
+          {/* LOADING */}
           {loading && (
             <div className="text-center py-12">
               <p className="text-lg font-bold">Cargando canchas...</p>
             </div>
           )}
 
+          {/* LISTADO */}
           {!loading && (
             <>
               {canchasFiltradas.length === 0 ? (
@@ -114,9 +95,9 @@ export default function Canchas() {
                       <div
                         className="h-40 bg-cover bg-center bg-gray-200"
                         style={{
-                          backgroundImage: cancha.fotos && cancha.fotos[0]
+                           backgroundImage: cancha.fotos && cancha.fotos[0]
                                       ? `url(http://localhost:3000${cancha.fotos[0]})`
-                            : `url(${fotodefecto})`,
+                            :  `url(${fotodefecto})`
                         }}
                       />
 
@@ -124,14 +105,16 @@ export default function Canchas() {
                         <div className="flex justify-between items-start">
                           <div>
                             <h3 className="font-black text-lg">{cancha.nombre}</h3>
-                            <p className="text-xs font-bold text-gray-600">{cancha.acronimo}</p>
+                            <p className="text-xs font-bold text-gray-600">
+                              {cancha.acronimo}
+                            </p>
                           </div>
                           <span className={`px-2 py-1 rounded text-xs font-bold ${
-                            cancha.estado === "disponible"
-                              ? "bg-green-100 text-green-800"
-                              : cancha.estado === "ocupada"
-                              ? "bg-red-100 text-red-800"
-                              : "bg-yellow-100 text-yellow-800"
+                            cancha.estado === 'disponible'
+                              ? 'bg-green-100 text-green-800'
+                              : cancha.estado === 'ocupada'
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-yellow-100 text-yellow-800'
                           }`}>
                             {cancha.estado}
                           </span>
@@ -158,8 +141,9 @@ export default function Canchas() {
                             ${cancha.precioHora}
                             <span className="text-sm font-normal"> / hora</span>
                           </p>
-                          <Link to={`/reservar/${cancha._id}`}>
-                            <button className="rounded-lg bg-black text-white px-4 py-2 text-sm font-bold hover:opacity-90">
+                         
+                          <Link to={`/login`}>
+                            <button className="rounded-lg border border-black px-4 py-2 text-sm font-bold hover:bg-gray-100">
                               Reservar
                             </button>
                           </Link>
@@ -171,23 +155,25 @@ export default function Canchas() {
               )}
             </>
           )}
+
         </div>
       </main>
 
       {/* ================= FOOTER ================= */}
-      <footer className="border-t py-6 text-xs text-gray-600">
-        <div className="mx-auto max-w-5xl px-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <FaRegFutbol />
-            <span>© 2024 ReservaCancha</span>
-          </div>
-          <nav className="flex gap-3">
-            <Link className="hover:underline" to="#">Nosotros</Link>
-            <Link className="hover:underline" to="#">Contacto</Link>
-            <Link className="hover:underline" to="#">Términos</Link>
-          </nav>
-        </div>
-      </footer>
+      <footer className="border-t border-gray-300 py-4">
+              <div className="mx-auto flex max-w-5xl flex-col items-center gap-3 px-4 sm:flex-row sm:justify-between">
+                <div className="flex items-center gap-2">
+                  <FaRegFutbol />
+                  <p className="text-xs font-semibold">© 2024 ReservaCancha</p>
+                </div>
+      
+                <nav className="flex gap-4 text-xs">
+                  <Link className="hover:underline" to="#">Sobre Nosotros</Link>
+                  <Link className="hover:underline" to="#">Contacto</Link>
+                  <Link className="hover:underline" to="#">Términos</Link>
+                </nav>
+              </div>
+            </footer>
 
     </div>
   );

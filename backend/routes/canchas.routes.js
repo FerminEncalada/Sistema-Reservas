@@ -6,21 +6,28 @@ import {
   updateCancha,
   deleteCancha
 } from "../controllers/canchas.controller.js";
+import { upload } from "../middlewares/upload.js";
+
 
 import { authRequired } from "../middlewares/validateToken.js";
 import isAdmin from "../middlewares/isAdmin.js";
 
 const router = Router();
 
-// listar canchas → cualquier usuario autenticado
-router.get("/canchas", authRequired, getCanchas);
+// listar canchas → PÚBLICO (sin autenticación)
+router.get("/canchas", getCanchas);
 
-// ver una cancha → cualquier usuario autenticado
-router.get("/canchas/:id", authRequired, getCancha);
+// ver una cancha → PÚBLICO (sin autenticación)
+router.get("/canchas/:id", getCancha);
 
 // crear cancha → solo admin
-router.post("/canchas", authRequired, isAdmin, createCancha);
-
+router.post(
+  "/canchas",
+  authRequired,
+  isAdmin,
+  upload.array("fotos", 5),
+  createCancha
+);
 // editar cancha → solo admin
 router.put("/canchas/:id", authRequired, isAdmin, updateCancha);
 

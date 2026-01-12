@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { authRequired } from "../middlewares/validateToken.js";
-import { getReservas, 
+import { 
+    getReservas, 
     getReserva, 
     createReserva, 
     updateReserva, 
@@ -8,21 +9,24 @@ import { getReservas,
     getDisponibilidadCancha
 } from "../controllers/reservas.controller.js";
 
-const router = Router()
+const router = Router();
 
+// Obtener todas las reservas del usuario autenticado
 router.get("/reservas", authRequired, getReservas);
 
+// Obtener una reserva específica
 router.get("/reservas/:id", authRequired, getReserva);
 
+// Crear nueva reserva
 router.post("/reservas", authRequired, createReserva);
 
-router.delete("/reservas/:id", authRequired, deleteReserva);
-
-router.get("/disponibilidad", authRequired, getReserva);
-
+// Actualizar reserva
 router.put("/reservas/:id", authRequired, updateReserva);
 
-router.get("/:id/disponibilidad", getDisponibilidadCancha);
+// Eliminar reserva
+router.delete("/reservas/:id", authRequired, deleteReserva);
 
+// Consultar disponibilidad de una cancha (ruta corregida)
+router.get("/canchas/:id/disponibilidad", getDisponibilidadCancha);
 
 export default router;
