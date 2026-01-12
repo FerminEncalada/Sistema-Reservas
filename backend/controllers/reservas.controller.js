@@ -130,13 +130,7 @@ export const createReserva = async (req, res) => {
             .populate("cancha");
 
         // Notificación externa (opcional)
-        await axios.post('http://localhost:5001/api/notificaciones/send', {
-            email: usuario.email,
-            nombre: usuario.username,
-            cancha: cancha.nombre,
-            fecha: reservaCompleta.fecha,
-            hora: reservaCompleta.horaInicio
-        });
+    
 
         return res.status(201).json({
             success: true,
@@ -182,36 +176,91 @@ export const deleteReserva = async (req, res) => {
     }
 };
 
-// Actualizar una reserva
 export const updateReserva = async (req, res) => {
-    try {
-        const reserva = await Reserva.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true, runValidators: true }
-        ).populate("user").populate("cancha");
+  try {
+    const { fecha, horaInicio, horaFin } = req.body;
+    const { id } = req.params;
 
-        if (!reserva) {
-            return res.status(404).json({
-                success: false,
-                message: "❌ Reserva no encontrada."
-            });
-        }
-
-        return res.status(200).json({
-            success: true,
-            message: "✅ Reserva actualizada exitosamente.",
-            data: reserva
-        });
-
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "❌ Error al actualizar la reserva.",
-            error: error.message
-        });
+    const reserva = await Reserva.findById(id);
+    if (!reserva) {
+      return res.status(404).json({
+        success: false,
+        message: "❌ Reserva no encontrada"
+      });
     }
+
+    const cancha = await Cancha.findById(reserva.cancha);
+    if (!cancha) {
+      return res.status(404).json({
+        success: false,
+        message: "❌ Cancha no encontrada"
+      });
+    }
+
+    // Validar horario dentro del rango
+    const apertura = parseInt(cancha.horarioApertura.split(":")[0]);
+    const cierre = parseInt(cancha.horarioCierre.split(":")[0]);
+    const inicio = parseInt(horaInicio.split(":")[0]);
+    const fin = parseInt(horaFin.split(":")[0]);
+
+    if (inicio < apertura || fin > cierre || inicio >= fin) {
+      return res.status(400).json({
+        success: false,
+        message: "⛔ Horario fuera del rango permitido"
+      });
+    }
+
+    // Verificar conflictos (excluyendo esta reserva)
+    const conflicto = await Reserva.findOne({
+      _id: { $ne: id },
+      cancha: reserva.cancha,
+      fecha: new Date(fecha),
+      $or: [
+        { horaInicio: { $lt: horaFin }, horaFin: { $gt: horaInicio } }
+      ],
+      estado: { $in: ["pendiente", "confirmada"] }
+    });
+
+    if (conflicto) {
+      return res.status(400).json({
+        success: false,
+        message: "⛔ Ya existe otra reserva en ese horario"
+      });
+    }
+
+    // Recalcular total
+    const [iH, iM] = horaInicio.split(":").map(Number);
+    const [fH, fM] = horaFin.split(":").map(Number);
+    const horas = (fH + fM / 60) - (iH + iM / 60);
+
+    const total = horas * cancha.precioHora;
+
+    reserva.fecha = fecha;
+    reserva.horaInicio = horaInicio;
+    reserva.horaFin = horaFin;
+    reserva.total = total;
+
+    await reserva.save();
+
+    const reservaActualizada = await Reserva.findById(id)
+      .populate("user")
+      .populate("cancha");
+
+    return res.status(200).json({
+      success: true,
+      message: "✅ Reserva actualizada correctamente",
+      data: reservaActualizada
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "❌ Error al actualizar la reserva",
+      error: error.message
+    });
+  }
 };
+
 
 // Consultar disponibilidad de cancha
 export const getDisponibilidadCancha = async (req, res) => {

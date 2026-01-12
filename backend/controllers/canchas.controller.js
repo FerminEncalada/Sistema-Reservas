@@ -47,83 +47,64 @@ export const getCancha = async (req, res) => {
     }
 };
 export const createCancha = async (req, res) => {
-    try {
-        const { nombre, tipo, precioHora, estado, acronimo, ubicacion, fotos, horarioApertura, horarioCierre } = req.body;
+  try {
+    const {
+      nombre,
+      tipo,
+      precioHora,
+      estado,
+      acronimo,
+      direccion,
+      lat,
+      lng,
+      horarioApertura,
+      horarioCierre
+    } = req.body;
 
-        // Validar campos obligatorios
-        if (!nombre || !tipo || !precioHora || !ubicacion || !ubicacion.direccion || !ubicacion.lat || !ubicacion.lng || !horarioApertura || !horarioCierre) {
-            return res.status(400).json({
-                success: false,
-                message: "❌ Todos los campos son obligatorios."
-            });
-        }
-
-        // Validar longitud mínima del nombre
-        if (nombre.length < 10) {
-            return res.status(400).json({
-                success: false,
-                message: "❌ El nombre debe tener mínimo 10 caracteres."
-            });
-        }
-
-        // Validar precio
-        if (precioHora <= 0) {
-            return res.status(400).json({
-                success: false,
-                message: "❌ El precio por hora debe ser mayor a 0."
-            });
-        }
-
-        // Validar formato del acrónimo (Primeras letras del nombre + número)
-        // Ejemplo "Cancha Pepe 1" → CP1
-        const palabras = nombre.split(" ");
-        const letras = palabras.map(p => p[0].toUpperCase()).join(""); // CP de Cancha Pepe
-        const regexAcronimo = new RegExp(`^${letras}[0-9]+$`);
-
-        if (!regexAcronimo.test(acronimo)) {
-            return res.status(400).json({
-                success: false,
-                message: `❌ Formato de acrónimo inválido. Debe ser: ${letras} + número (Ejemplo: ${letras}1)`
-            });
-        }
-
-        // Verificar acrónimo único
-        const acronimoExistente = await Cancha.findOne({ acronimo });
-        if (acronimoExistente) {
-            return res.status(400).json({
-                success: false,
-                message: "❌ El acrónimo ya está registrado. Use otro número."
-            });
-        }
-
-        const nuevaCancha = new Cancha({
-            nombre,
-            tipo,
-            precioHora,
-            estado: estado || "disponible",
-            acronimo,
-            ubicacion,
-            fotos: fotos || [],
-            horarioApertura,
-            horarioCierre
-        });
-
-        const savedCancha = await nuevaCancha.save();
-
-        return res.status(201).json({
-            success: true,
-            message: "✅ Cancha registrada exitosamente.",
-            data: savedCancha
-        });
-
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "❌ Error al crear la cancha.",
-            error: error.message
-        });
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "❌ Debe subir al menos una foto"
+      });
     }
+
+    const fotos = req.files.map(file => `/uploads/${file.filename}`);
+
+    const ubicacion = {
+      direccion,
+      lat: Number(lat),
+      lng: Number(lng)
+    };
+
+    const nuevaCancha = new Cancha({
+      nombre,
+      tipo,
+      precioHora,
+      estado: estado || "disponible",
+      acronimo,
+      ubicacion,
+      fotos,
+      horarioApertura,
+      horarioCierre
+    });
+
+    const savedCancha = await nuevaCancha.save();
+
+    return res.status(201).json({
+      success: true,
+      message: "✅ Cancha registrada exitosamente.",
+      data: savedCancha
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "❌ Error al crear la cancha.",
+      error: error.message
+    });
+  }
 };
+
 
 
 export const deleteCancha = async (req, res) => {
