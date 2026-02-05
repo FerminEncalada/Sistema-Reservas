@@ -32,8 +32,14 @@ export const register = async (req, res) => {
       });
     }
 
-    // Validar contraseña (8 a 20 caracteres, 1 mayúscula, 1 número, 1 símbolo)
-    // Validar contraseña removido
+    // ✅ VALIDAR CONTRASEÑA (8 a 20 caracteres, 1 mayúscula, 1 número, 1 símbolo)
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        success: false,
+        message: "La contraseña debe tener entre 8 y 20 caracteres, incluir una mayúscula, un número y un carácter especial (@$!%*?&)"
+      });
+    }
 
     // Verificar unicidad: email, username y cedula
     const emailExist = await User.findOne({ email });
@@ -61,7 +67,7 @@ export const register = async (req, res) => {
       nombre,
       apellido,
       cedula,
-      rol: rol || 'usuario' // Asignar rol por defecto 'user' si no se proporciona
+      rol: rol || 'usuario'
     });
     
     const userSaved = await newUser.save();
@@ -81,7 +87,7 @@ export const register = async (req, res) => {
         apellido: userSaved.apellido,
         cedula: userSaved.cedula,
         rol: userSaved.rol
-            }
+      }
     });
   } catch (error) {
     console.error(error);
@@ -92,6 +98,7 @@ export const register = async (req, res) => {
     });
   }
 };
+
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -104,15 +111,14 @@ export const login = async (req, res) => {
     if (!isMatch)
       return res.status(400).json({ message: "Contraseña incorrecta" });
 
-    // 👇 Aquí se agrega el rol al payload
     const token = await createAccessToken({
       id: userFound._id,
-      rol: userFound.rol, // 👈 IMPORTANTE
+      rol: userFound.rol,
     });
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // cambiar a true si usas HTTPS
+      secure: false,
       sameSite: "lax",
     });
 
@@ -130,7 +136,6 @@ export const login = async (req, res) => {
     res.status(500).json({ message: "Error en el servidor" });
   }
 };
-
 
 export const logout = (req, res) => {
     try {
@@ -151,7 +156,6 @@ export const logout = (req, res) => {
         });
     }
 };
-
 
 export const profile = async (req, res) => {
     try {
@@ -188,7 +192,7 @@ export const profile = async (req, res) => {
     }
 };
 
-export  const getUsers = async (req, res) => {
+export const getUsers = async (req, res) => {
   try { 
       const users = await User.find();
 
@@ -208,13 +212,11 @@ export  const getUsers = async (req, res) => {
   }
 };
 
-// 🔹 Actualizar usuario
 export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
     const { username, email, nombre, apellido, cedula, password, rol } = req.body;
 
-    // Verificar si el usuario existe
     const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({
@@ -238,14 +240,15 @@ export const updateUser = async (req, res) => {
       });
     }
 
+    // ✅ VALIDAR CONTRASEÑA SOLO SI SE PROPORCIONA
     if (password && !/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/.test(password)) {
       return res.status(400).json({
         success: false,
-        message: "La contraseña debe tener entre 8 y 20 caracteres, incluir una mayúscula, un número y un carácter especial",
+        message: "La contraseña debe tener entre 8 y 20 caracteres, incluir una mayúscula, un número y un carácter especial (@$!%*?&)",
       });
     }
 
-    // Verificar unicidad (si cambian email, username o cédula)
+    // Verificar unicidad
     if (email && email !== user.email) {
       const emailExist = await User.findOne({ email });
       if (emailExist) {
@@ -317,12 +320,10 @@ export const updateUser = async (req, res) => {
   }
 };
 
-// 🔹 Eliminar usuario
 export const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Verificar si el usuario existe
     const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({
@@ -331,7 +332,6 @@ export const deleteUser = async (req, res) => {
       });
     }
 
-    // Eliminar usuario
     await user.deleteOne();
 
     return res.status(200).json({
@@ -352,4 +352,3 @@ export const deleteUser = async (req, res) => {
     });
   }
 };
-

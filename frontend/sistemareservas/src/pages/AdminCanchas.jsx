@@ -12,7 +12,6 @@ export default function AdminCanchas() {
   const { user, cerrarSesionUsuario, isAuthenticated } = useAuth();
   const navigate = useNavigate();
  
-
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/login");
@@ -53,13 +52,13 @@ export default function AdminCanchas() {
 
   const handleCerrarSesion = async () => {
     await cerrarSesionUsuario();
-    navigate("/");
+    navigate("/"); // ✅ REDIRIGIR AL INICIO EN LUGAR DE /login
   };
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-white text-black font-display">
 
-      {/* ================= HEADER ================= */}
+      {/* HEADER */}
       <header className="sticky top-0 z-50 flex items-center justify-between border-b border-gray-300 bg-white px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
           <FaRegFutbol className="text-2xl text-black" />
@@ -89,7 +88,7 @@ export default function AdminCanchas() {
         </div>
       </header>
 
-      {/* ================= MAIN ================= */}
+      {/* MAIN */}
       <main className="py-8 flex-1">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
@@ -164,7 +163,6 @@ export default function AdminCanchas() {
                                   style={{
                                     backgroundImage: cancha.fotos && cancha.fotos[0]
                                       ? `url(http://localhost:3000${cancha.fotos[0]})`
-
                                       : 'url(https://images.unsplash.com/photo-1508609349937-5ec4ae374ebf)'
                                   }}
                                 />
@@ -199,13 +197,15 @@ export default function AdminCanchas() {
                             </td>
                             <td className="px-6 py-4">
                               <div className="flex items-center justify-center gap-2">
-                                <button
-                                  onClick={() => toast.info("Función editar en desarrollo")}
-                                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-                                  title="Editar"
-                                >
-                                  <FaEdit />
-                                </button>
+                                {/* ✅ BOTÓN EDITAR FUNCIONAL */}
+                                <Link to={`/admin/canchas/editar/${cancha._id}`}>
+                                  <button
+                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                                    title="Editar"
+                                  >
+                                    <FaEdit />
+                                  </button>
+                                </Link>
                                 <button
                                   onClick={() => handleEliminar(cancha._id, cancha.nombre)}
                                   className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
@@ -228,7 +228,7 @@ export default function AdminCanchas() {
         </div>
       </main>
 
-      {/* ================= FOOTER ================= */}
+      {/* FOOTER */}
       <footer className="border-t py-6 text-xs text-gray-600">
         <div className="mx-auto flex max-w-7xl flex-col items-center gap-1 px-4 sm:flex-row sm:justify-between">
           <p className="text-sm font-semibold">
