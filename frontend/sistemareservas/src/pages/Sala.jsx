@@ -32,43 +32,16 @@ export default function Sala() {
     }
   };
 
-  const handleCancelarReserva = (id) => {
-    toast.warn(
-      ({ closeToast }) => (
-        <div className="space-y-2">
-          <p className="font-bold">¿Cancelar esta reserva?</p>
-          <p className="text-sm text-gray-600">
-            Esta acción no se puede deshacer.
-          </p>
+  const handleCancelarReserva = async (id) => {
+    if (!window.confirm("¿Estás seguro de cancelar esta reserva?")) return;
 
-          <div className="flex justify-end gap-2 pt-2">
-            <button
-              onClick={closeToast}
-              className="px-3 py-1 bg-green-500 text-white text-sm border rounded hover:bg-green-300"
-            >
-              No
-            </button>
-
-            <button
-              onClick={async () => {
-                closeToast();
-                try {
-                  await eliminarReserva(id);
-                  toast.success("Reserva cancelada exitosamente");
-                  cargarReservas();
-                } catch {
-                  toast.error("Error al cancelar la reserva");
-                }
-              }}
-              className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-500"
-            >
-              Sí, cancelar
-            </button>
-          </div>
-        </div>
-      ),
-      { autoClose: false }
-    );
+    try {
+      await eliminarReserva(id);
+      toast.success("Reserva cancelada exitosamente");
+      cargarReservas();
+    } catch (error) {
+      toast.error("Error al cancelar la reserva");
+    }
   };
 
   const handleCerrarSesion = async () => {
@@ -85,7 +58,7 @@ export default function Sala() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col  bg-white text-black font-display">
+    <div className="min-h-screen w-full bg-white text-black font-display">
 
       {/* ================= HEADER ================= */}
       <header className="sticky top-0 z-50 flex items-center justify-between border-b border-gray-300 bg-white px-4 py-3 sm:px-6 lg:px-8">
@@ -103,7 +76,7 @@ export default function Sala() {
           </Link>
           {user?.rol === 'admin' && (
             <Link className="text-sm font-medium hover:underline" to="/admin/canchas">
-              Panel Admin
+              Admin
             </Link>
           )}
         </nav>
@@ -125,7 +98,7 @@ export default function Sala() {
       </header>
 
       {/* ================= MAIN ================= */}
-      <main className="flex-1 py-8">
+      <main className="py-8">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
 
           <div className="flex justify-between items-center mb-6">
@@ -167,7 +140,7 @@ export default function Sala() {
                       key={reserva._id}
                       className="overflow-hidden rounded-xl border border-gray-300 shadow-sm hover:shadow-lg transition"
                     >
-                      <div className="bg-black p-4 text-white">
+                      <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-4 text-white">
                         <h3 className="text-lg font-bold">
                           {reserva.cancha?.nombre || "Cancha"}
                         </h3>
@@ -206,12 +179,6 @@ export default function Sala() {
                             {reserva.estado.toUpperCase()}
                           </span>
                         </div>
-<button
-  onClick={() => navigate(`/reservas/editar/${reserva._id}`)}
-  className="w-full mt-3 h-10 rounded-lg border border-black text-black font-bold hover:bg-gray-100"
->
-  Editar Reserva
-</button>
 
                         {reserva.estado !== 'cancelada' && (
                           <button
@@ -220,8 +187,6 @@ export default function Sala() {
                           >
                             Cancelar Reserva
                           </button>
-                          
-                          
                         )}
                       </div>
                     </div>
@@ -235,20 +200,13 @@ export default function Sala() {
       </main>
 
       {/* ================= FOOTER ================= */}
-<footer className="border-t py-6 text-xs text-gray-600">
-        <div className="mx-auto max-w-5xl px-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <FaRegFutbol />
-            <span>© 2024 ReservaCancha</span>
-          </div>
-          <nav className="flex gap-3">
-            <Link className="hover:underline" to="#">Nosotros</Link>
-            <Link className="hover:underline" to="#">Contacto</Link>
-            <Link className="hover:underline" to="#">Términos</Link>
-          </nav>
+      <footer className="border-t border-gray-300 py-6 mt-10">
+        <div className="mx-auto flex max-w-6xl items-center justify-center px-4">
+          <p className="text-sm font-semibold">
+            © 2024 ReservaCancha
+          </p>
         </div>
       </footer>
-
 
       <ToastContainer
         position="top-right"

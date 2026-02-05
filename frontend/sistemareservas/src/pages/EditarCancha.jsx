@@ -1,30 +1,18 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { FaRegFutbol, FaArrowLeft } from "react-icons/fa";
-import { crearCancha } from "../api/Canchas";
+import { obtenerCancha, actualizarCancha } from "../api/Canchas";
 import { useAuth } from "../context/AuthContext";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-export default function NuevaCancha() {
+export default function EditarCancha() {
+  const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
   const [preview, setPreview] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
-
-  const handleImage = (file) => {
-    if (!file || !file.type.startsWith("image/")) {
-      toast.error("Solo se permiten imágenes");
-      return;
-    }
-
-    setFormData({
-      ...formData,
-      fotos: [file],
-    });
-
-    setPreview(URL.createObjectURL(file));
-  };
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -40,6 +28,55 @@ export default function NuevaCancha() {
     horarioCierre: ""
   });
 
+  useEffect(() => {
+    cargarCancha();
+  }, [id]);
+
+  const cargarCancha = async () => {
+    try {
+      const res = await obtenerCancha(id);
+      const cancha = res.data.data;
+      
+      setFormData({
+        nombre: cancha.nombre,
+        tipo: cancha.tipo,
+        precioHora: cancha.precioHora,
+        acronimo: cancha.acronimo,
+        estado: cancha.estado,
+        direccion: cancha.ubicacion?.direccion || "",
+        lat: cancha.ubicacion?.lat || "",
+        lng: cancha.ubicacion?.lng || "",
+        fotos: [],
+        horarioApertura: cancha.horarioApertura,
+        horarioCierre: cancha.horarioCierre
+      });
+
+      // Mostrar imagen actual
+      if (cancha.fotos && cancha.fotos[0]) {
+        setPreview(`http://localhost:3000${cancha.fotos[0]}`);
+      }
+    } catch (error) {
+      toast.error("Error al cargar la cancha");
+      navigate("/admin/canchas");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImage = (file) => {
+    if (!file || !file.type.startsWith("image/")) {
+      toast.error("Solo se permiten imágenes");
+      return;
+    }
+
+    setFormData({
+      ...formData,
+      fotos: [file],
+    });
+
+    setPreview(URL.createObjectURL(file));
+  };
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -47,24 +84,6 @@ export default function NuevaCancha() {
     });
   };
 
-  const generarAcronimo = () => {
-    if (!formData.nombre) {
-      toast.warning("Primero ingresa el nombre de la cancha");
-      return;
-    }
-
-    const palabras = formData.nombre.trim().split(" ");
-    const letras = palabras.map(p => p[0].toUpperCase()).join("");
-    
-    setFormData({
-      ...formData,
-      acronimo: `${letras}1`
-    });
-    
-    toast.info(`Acrónimo sugerido: ${letras}1. Puedes modificarlo si lo deseas.`);
-  };
-
-  // ✅ VALIDAR HORARIOS ANTES DE ENVIAR
   const validarHorarios = () => {
     const [horaApertura, minutoApertura] = formData.horarioApertura.split(":").map(Number);
     const [horaCierre, minutoCierre] = formData.horarioCierre.split(":").map(Number);
@@ -83,7 +102,6 @@ export default function NuevaCancha() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // ✅ VALIDAR HORARIOS
     if (!validarHorarios()) {
       return;
     }
@@ -102,20 +120,29 @@ export default function NuevaCancha() {
       data.append("horarioApertura", formData.horarioApertura);
       data.append("horarioCierre", formData.horarioCierre);
 
+      // Solo agregar fotos si hay nuevas
       for (let i = 0; i < formData.fotos.length; i++) {
         data.append("fotos", formData.fotos[i]);
       }
 
-      await crearCancha(data);
-      toast.success("✅ Cancha creada exitosamente");
+      await actualizarCancha(id, data);
+      toast.success("✅ Cancha actualizada exitosamente");
 
       setTimeout(() => navigate("/admin/canchas"), 1500);
 
     } catch (error) {
-      const mensaje = error.response?.data?.message || "Error al crear la cancha";
+      const mensaje = error.response?.data?.message || "Error al actualizar la cancha";
       toast.error(mensaje);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-lg font-bold">Cargando...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full bg-white text-black font-display">
@@ -143,7 +170,7 @@ export default function NuevaCancha() {
             <span className="text-sm font-bold">Volver a gestión de canchas</span>
           </Link>
 
-          <h1 className="text-3xl font-black mb-8">Nueva Cancha</h1>
+          <h1 className="text-3xl font-black mb-8">Editar Cancha</h1>
 
           <form onSubmit={handleSubmit} className="bg-white border border-gray-300 rounded-xl p-6 shadow-lg space-y-6">
 
@@ -164,7 +191,6 @@ export default function NuevaCancha() {
                   placeholder="Ej: Cancha El Golazo 1"
                   className="w-full h-12 border border-gray-300 rounded-lg px-4 outline-none focus:border-black"
                 />
-                <p className="text-xs text-gray-500 mt-1">Mínimo 10 caracteres</p>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
@@ -212,25 +238,15 @@ export default function NuevaCancha() {
                   <label className="block text-sm font-bold mb-2">
                     Acrónimo *
                   </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      name="acronimo"
-                      value={formData.acronimo}
-                      onChange={handleChange}
-                      required
-                      placeholder="EG1"
-                      className="flex-1 h-12 border border-gray-300 rounded-lg px-4 outline-none focus:border-black"
-                    />
-                    <button
-                      type="button"
-                      onClick={generarAcronimo}
-                      className="h-12 px-4 border border-black rounded-lg text-sm font-bold hover:bg-gray-100"
-                    >
-                      Generar
-                    </button>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">Ej: Cancha El Golazo → EG1</p>
+                  <input
+                    type="text"
+                    name="acronimo"
+                    value={formData.acronimo}
+                    onChange={handleChange}
+                    required
+                    placeholder="EG1"
+                    className="w-full h-12 border border-gray-300 rounded-lg px-4 outline-none focus:border-black"
+                  />
                 </div>
 
                 <div>
@@ -307,7 +323,6 @@ export default function NuevaCancha() {
             <div className="space-y-4 pt-6 border-t border-gray-200">
               <h2 className="text-xl font-black">Horarios</h2>
               
-              {/* ✅ MENSAJE DE AYUDA */}
               <p className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
                 ⏰ La hora de cierre debe ser posterior a la hora de apertura
               </p>
@@ -346,6 +361,7 @@ export default function NuevaCancha() {
             {/* FOTO */}
             <div className="space-y-3 pt-6 border-t border-gray-200">
               <h2 className="text-xl font-black">Imagen de la cancha</h2>
+              <p className="text-sm text-gray-600">Deja en blanco para mantener la imagen actual</p>
 
               <div
                 onDragOver={(e) => {
@@ -401,7 +417,7 @@ export default function NuevaCancha() {
                 type="submit"
                 className="flex-1 h-12 rounded-lg bg-green-600 text-white font-bold hover:opacity-90"
               >
-                Crear Cancha
+                Guardar Cambios
               </button>
             </div>
 

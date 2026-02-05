@@ -10,9 +10,9 @@ import ReservarCancha from './pages/ReservarCancha';
 import Perfil from './pages/Perfil';
 import AdminCanchas from './pages/AdminCanchas';
 import NuevaCancha from './pages/NuevaCancha';
+import EditarCancha from './pages/EditarCancha'; // ✅ NUEVA IMPORTACIÓN
 import CanchasInicio from './pages/Canchasinicio';
 import EditarReservas from './pages/EditarReservas';
-
 
 function App() {
   return (
@@ -35,6 +35,7 @@ function App() {
           {/* Rutas protegidas - Admin */}
           <Route path="/admin/canchas" element={<AdminCanchas />} />
           <Route path="/admin/canchas/nueva" element={<NuevaCancha />} />
+          <Route path="/admin/canchas/editar/:id" element={<EditarCancha />} /> {/* ✅ NUEVA RUTA */}
           
           {/* Ruta 404 */}
           <Route path="*" element={<Navigate to="/" />} />

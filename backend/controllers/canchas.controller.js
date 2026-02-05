@@ -20,7 +20,6 @@ export const getCanchas = async (req, res) => {
     }
 };
 
-
 export const getCancha = async (req, res) => {
     try {
         const cancha = await Cancha.findById(req.params.id);
@@ -46,6 +45,7 @@ export const getCancha = async (req, res) => {
         });
     }
 };
+
 export const createCancha = async (req, res) => {
   try {
     const {
@@ -65,6 +65,20 @@ export const createCancha = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "❌ Debe subir al menos una foto"
+      });
+    }
+
+    // ✅ VALIDAR QUE LA HORA DE CIERRE SEA POSTERIOR A LA DE APERTURA
+    const [horaApertura, minutoApertura] = horarioApertura.split(":").map(Number);
+    const [horaCierre, minutoCierre] = horarioCierre.split(":").map(Number);
+    
+    const minutosApertura = horaApertura * 60 + minutoApertura;
+    const minutosCierre = horaCierre * 60 + minutoCierre;
+
+    if (minutosCierre <= minutosApertura) {
+      return res.status(400).json({
+        success: false,
+        message: "❌ La hora de cierre debe ser posterior a la hora de apertura"
       });
     }
 
@@ -105,8 +119,6 @@ export const createCancha = async (req, res) => {
   }
 };
 
-
-
 export const deleteCancha = async (req, res) => {
     try {
         const cancha = await Cancha.findByIdAndDelete(req.params.id);
@@ -133,14 +145,23 @@ export const deleteCancha = async (req, res) => {
     }
 };
 
-
 export const updateCancha = async (req, res) => {
     try {
-        const cancha = await Cancha.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true, runValidators: true }
-        );
+        const { id } = req.params;
+        const {
+          nombre,
+          tipo,
+          precioHora,
+          estado,
+          acronimo,
+          direccion,
+          lat,
+          lng,
+          horarioApertura,
+          horarioCierre
+        } = req.body;
+
+        const cancha = await Cancha.findById(id);
 
         if (!cancha) {
             return res.status(404).json({
@@ -149,10 +170,52 @@ export const updateCancha = async (req, res) => {
             });
         }
 
+        // ✅ VALIDAR HORARIOS SI SE PROPORCIONAN
+        if (horarioApertura && horarioCierre) {
+          const [horaApertura, minutoApertura] = horarioApertura.split(":").map(Number);
+          const [horaCierre, minutoCierre] = horarioCierre.split(":").map(Number);
+          
+          const minutosApertura = horaApertura * 60 + minutoApertura;
+          const minutosCierre = horaCierre * 60 + minutoCierre;
+
+          if (minutosCierre <= minutosApertura) {
+            return res.status(400).json({
+              success: false,
+              message: "❌ La hora de cierre debe ser posterior a la hora de apertura"
+            });
+          }
+        }
+
+        // Actualizar campos básicos
+        if (nombre) cancha.nombre = nombre;
+        if (tipo) cancha.tipo = tipo;
+        if (precioHora) cancha.precioHora = precioHora;
+        if (estado) cancha.estado = estado;
+        if (acronimo) cancha.acronimo = acronimo;
+        if (horarioApertura) cancha.horarioApertura = horarioApertura;
+        if (horarioCierre) cancha.horarioCierre = horarioCierre;
+
+        // Actualizar ubicación si se proporcionan todos los datos
+        if (direccion || lat || lng) {
+          cancha.ubicacion = {
+            direccion: direccion || cancha.ubicacion.direccion,
+            lat: lat ? Number(lat) : cancha.ubicacion.lat,
+            lng: lng ? Number(lng) : cancha.ubicacion.lng
+          };
+        }
+
+        // Actualizar fotos si se envían nuevas
+        if (req.files && req.files.length > 0) {
+          const nuevasFotos = req.files.map(file => `/uploads/${file.filename}`);
+          cancha.fotos = nuevasFotos;
+        }
+
+        const updatedCancha = await cancha.save();
+
         return res.status(200).json({
             success: true,
             message: "✅ Cancha actualizada exitosamente.",
-            data: cancha
+            data: updatedCancha
         });
 
     } catch (error) {

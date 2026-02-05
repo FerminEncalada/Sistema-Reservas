@@ -7,7 +7,6 @@ import { obtenerDisponibilidad } from "../api/Canchas";
 import { useAuth } from "../context/AuthContext";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import fotodefecto from "../photo/foto.jpg"
 
 export default function ReservarCancha() {
   const { id } = useParams();
@@ -152,9 +151,9 @@ export default function ReservarCancha() {
               <div
                 className="h-64 rounded-xl bg-cover bg-center mb-4"
                 style={{
-                   backgroundImage: cancha.fotos && cancha.fotos[0]
-                                      ? `url(http://localhost:3000${cancha.fotos[0]})`
-                    : `url(${fotodefecto})`
+                  backgroundImage: cancha.fotos && cancha.fotos[0]
+                    ? `url(${cancha.fotos[0]})`
+                    : 'url(https://images.unsplash.com/photo-1508609349937-5ec4ae374ebf)'
                 }}
               />
 

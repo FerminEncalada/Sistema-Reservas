@@ -1,25 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { FaRegFutbol, FaUserCircle, FaMapMarkerAlt, FaClock, FaSignOutAlt } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import { FaRegFutbol, FaUserCircle, FaStar, FaMapMarkerAlt, FaClock } from "react-icons/fa";
 import { obtenerCanchas } from "../api/Canchas";
 import { useAuth } from "../context/AuthContext";
-import fotodefecto from "../photo/foto.jpg"
 
 export default function Canchas() {
   const [canchas, setCanchas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState("");
-  const { isAuthenticated, user, cerrarSesionUsuario } = useAuth();
-  const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
 
-  // 🔐 PROTECCIÓN DE RUTA
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
     cargarCanchas();
-  }, [isAuthenticated, navigate]);
+  }, []);
 
   const cargarCanchas = async () => {
     try {
@@ -30,11 +23,6 @@ export default function Canchas() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleCerrarSesion = async () => {
-    await cerrarSesionUsuario();
-    navigate("/");
   };
 
   const canchasFiltradas = canchas.filter((cancha) =>
@@ -53,32 +41,46 @@ export default function Canchas() {
         </div>
 
         <nav className="hidden md:flex gap-8">
+          <Link className="text-sm font-medium text-black hover:underline" to="/">
+            Inicio
+          </Link>
           <Link className="text-sm font-medium text-black underline" to="/canchas">
             Canchas
           </Link>
-          <Link className="text-sm font-medium text-black hover:underline" to="/sala">
-            Mis Reservas
-          </Link>
-          {user?.rol === "admin" && (
+          {isAuthenticated && (
+            <Link className="text-sm font-medium text-black hover:underline" to="/sala">
+              Mis Reservas
+            </Link>
+          )}
+          {isAuthenticated && user?.rol === 'admin' && (
             <Link className="text-sm font-medium text-black hover:underline" to="/admin/canchas">
-              Panel Admin
+              Admin
             </Link>
           )}
         </nav>
 
-        <div className="flex items-center gap-3">
-          <span className="hidden sm:block text-sm font-medium">
-            {user?.username}
-          </span>
-          <Link to="/perfil">
-            <FaUserCircle className="text-3xl text-black cursor-pointer hover:opacity-70" />
-          </Link>
-          <button
-            onClick={handleCerrarSesion}
-            className="flex items-center gap-2 text-sm font-bold hover:text-red-600"
-          >
-            <FaSignOutAlt />
-          </button>
+        <div className="flex items-center gap-4">
+          {isAuthenticated ? (
+            <>
+              <span className="hidden sm:block text-sm font-medium">{user?.username}</span>
+              <Link to="/perfil">
+                <FaUserCircle className="text-3xl text-black cursor-pointer hover:opacity-70" />
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link to="/registro">
+                <button className="h-10 rounded-lg border border-black px-4 text-sm font-bold hover:bg-gray-100">
+                  Registro
+                </button>
+              </Link>
+              <Link to="/login">
+                <button className="h-10 rounded-lg bg-black text-white px-4 text-sm font-bold hover:opacity-90">
+                  Iniciar Sesión
+                </button>
+              </Link>
+            </>
+          )}
         </div>
       </header>
 
@@ -86,18 +88,28 @@ export default function Canchas() {
       <main className="flex-1 flex justify-center py-8">
         <div className="w-full max-w-5xl px-4 sm:px-6 lg:px-8">
 
+          {/* BUSCADOR */}
           <div className="mb-8">
             <h1 className="text-3xl font-black mb-3">
-              Canchas Disponibles
+              Canchas en Ecuador
             </h1>
+            <input
+              type="text"
+              placeholder="Buscar por nombre o ubicación..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              className="h-12 w-full rounded-lg border border-black px-4 outline-none"
+            />
           </div>
 
+          {/* LOADING */}
           {loading && (
             <div className="text-center py-12">
               <p className="text-lg font-bold">Cargando canchas...</p>
             </div>
           )}
 
+          {/* LISTADO */}
           {!loading && (
             <>
               {canchasFiltradas.length === 0 ? (
@@ -113,10 +125,10 @@ export default function Canchas() {
                     >
                       <div
                         className="h-40 bg-cover bg-center bg-gray-200"
-                        style={{
-                          backgroundImage: cancha.fotos && cancha.fotos[0]
-                                      ? `url(http://localhost:3000${cancha.fotos[0]})`
-                            : `url(${fotodefecto})`,
+                        style={{ 
+                          backgroundImage: cancha.fotos && cancha.fotos[0] 
+                            ? `url(${cancha.fotos[0]})` 
+                            : 'url(https://images.unsplash.com/photo-1508609349937-5ec4ae374ebf)' 
                         }}
                       />
 
@@ -127,11 +139,9 @@ export default function Canchas() {
                             <p className="text-xs font-bold text-gray-600">{cancha.acronimo}</p>
                           </div>
                           <span className={`px-2 py-1 rounded text-xs font-bold ${
-                            cancha.estado === "disponible"
-                              ? "bg-green-100 text-green-800"
-                              : cancha.estado === "ocupada"
-                              ? "bg-red-100 text-red-800"
-                              : "bg-yellow-100 text-yellow-800"
+                            cancha.estado === 'disponible' ? 'bg-green-100 text-green-800' :
+                            cancha.estado === 'ocupada' ? 'bg-red-100 text-red-800' :
+                            'bg-yellow-100 text-yellow-800'
                           }`}>
                             {cancha.estado}
                           </span>
@@ -141,16 +151,12 @@ export default function Canchas() {
 
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <FaMapMarkerAlt />
-                          <span className="truncate">
-                            {cancha.ubicacion?.direccion || "Sin ubicación"}
-                          </span>
+                          <span className="truncate">{cancha.ubicacion?.direccion || 'Sin ubicación'}</span>
                         </div>
 
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <FaClock />
-                          <span>
-                            {cancha.horarioApertura} - {cancha.horarioCierre}
-                          </span>
+                          <span>{cancha.horarioApertura} - {cancha.horarioCierre}</span>
                         </div>
 
                         <div className="mt-3 flex items-center justify-between">
@@ -158,11 +164,19 @@ export default function Canchas() {
                             ${cancha.precioHora}
                             <span className="text-sm font-normal"> / hora</span>
                           </p>
-                          <Link to={`/reservar/${cancha._id}`}>
-                            <button className="rounded-lg bg-black text-white px-4 py-2 text-sm font-bold hover:opacity-90">
-                              Reservar
-                            </button>
-                          </Link>
+                          {isAuthenticated ? (
+                            <Link to={`/reservar/${cancha._id}`}>
+                              <button className="rounded-lg bg-black text-white px-4 py-2 text-sm font-bold hover:opacity-90">
+                                Reservar
+                              </button>
+                            </Link>
+                          ) : (
+                            <Link to="/login">
+                              <button className="rounded-lg border border-black px-4 py-2 text-sm font-bold hover:bg-gray-100">
+                                Ver detalles
+                              </button>
+                            </Link>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -171,21 +185,19 @@ export default function Canchas() {
               )}
             </>
           )}
+
         </div>
       </main>
 
       {/* ================= FOOTER ================= */}
-      <footer className="border-t py-6 text-xs text-gray-600">
-        <div className="mx-auto max-w-5xl px-4 flex justify-between items-center">
+      <footer className="border-t border-gray-300 py-8 mt-12">
+        <div className="mx-auto flex max-w-5xl flex-col items-center gap-6 px-4 sm:flex-row sm:justify-between">
           <div className="flex items-center gap-2">
-            <FaRegFutbol />
-            <span>© 2024 ReservaCancha</span>
+            <FaRegFutbol className="text-black" />
+            <p className="text-sm font-semibold text-black">
+              © 2024 ReservaCancha. Todos los derechos reservados.
+            </p>
           </div>
-          <nav className="flex gap-3">
-            <Link className="hover:underline" to="#">Nosotros</Link>
-            <Link className="hover:underline" to="#">Contacto</Link>
-            <Link className="hover:underline" to="#">Términos</Link>
-          </nav>
         </div>
       </footer>
 
